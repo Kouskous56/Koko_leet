@@ -1,0 +1,26 @@
+class Solution {
+public:
+    vector<TreeNode*> allPossibleFBT(int n) {
+        if (n % 2 == 0) return {};
+        
+        vector<vector<TreeNode*>> trees(n + 1);
+        trees[1] = {new TreeNode(0)};
+        
+        for (int total = 3; total <= n; total += 2) {
+            for (int left = 1; left < total; left += 2) {
+                int right = total - 1 - left;
+                
+                for (TreeNode* L : trees[left]) {
+                    for (TreeNode* R : trees[right]) {
+                        TreeNode* root = new TreeNode(0);
+                        root->left = L;
+                        root->right = R;
+                        trees[total].push_back(root);
+                    }
+                }
+            }
+        }
+        
+        return trees[n];
+    }
+};
