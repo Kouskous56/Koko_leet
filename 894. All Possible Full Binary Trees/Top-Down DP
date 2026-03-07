@@ -1,0 +1,30 @@
+class Solution {
+    unordered_map<int, vector<TreeNode*>> cache;
+    
+public:
+    vector<TreeNode*> allPossibleFBT(int n) {
+        if (n % 2 == 0) return {};
+        if (n == 1) return {new TreeNode(0)};
+        if (cache.count(n)) return cache[n];
+        
+        vector<TreeNode*> trees;
+        
+        for (int left = 1; left < n; left += 2) {
+            int right = n - 1 - left;
+            
+            vector<TreeNode*> leftTrees = allPossibleFBT(left);
+            vector<TreeNode*> rightTrees = allPossibleFBT(right);
+            
+            for (TreeNode* l : leftTrees) {
+                for (TreeNode* r : rightTrees) {
+                    TreeNode* root = new TreeNode(0);
+                    root->left = l;
+                    root->right = r;
+                    trees.push_back(root);
+                }
+            }
+        }
+        
+        return cache[n] = trees;
+    }
+};
