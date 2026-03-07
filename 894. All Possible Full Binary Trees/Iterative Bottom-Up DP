@@ -1,0 +1,35 @@
+class Solution {
+public:
+    vector<TreeNode*> allPossibleFBT(int n) {
+        if (n % 2 == 0) return {};
+        
+        vector<vector<TreeNode*>> dp(n + 1);
+        dp[1] = {new TreeNode(0)};
+        
+        for (int total = 3; total <= n; total += 2) {
+            for (int left = 1; left < total; left += 2) {
+                int right = total - 1 - left;
+                
+                for (TreeNode* L : dp[left]) {
+                    for (TreeNode* R : dp[right]) {
+                        TreeNode* root = new TreeNode(0);
+                        root->left = copy(L);
+                        root->right = copy(R);
+                        dp[total].push_back(root);
+                    }
+                }
+            }
+        }
+        
+        return dp[n];
+    }
+    
+private:
+    TreeNode* copy(TreeNode* root) {
+        if (!root) return nullptr;
+        TreeNode* newNode = new TreeNode(0);
+        newNode->left = copy(root->left);
+        newNode->right = copy(root->right);
+        return newNode;
+    }
+};
