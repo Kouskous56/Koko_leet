@@ -1,0 +1,32 @@
+class Solution {
+public:
+    int numberOfStableArrays(int zero, int one, int limit) {
+        const int MOD = 1e9 + 7;
+        
+        vector<vector<long long>> z(zero + 1, vector<long long>(one + 1));
+        vector<vector<long long>> o(zero + 1, vector<long long>(one + 1));
+        
+        for (int i = 1; i <= min(zero, limit); i++) z[i][0] = 1;
+        for (int j = 1; j <= min(one, limit); j++) o[0][j] = 1;
+        
+        vector<long long> cs(one + 1);
+        
+        for (int i = 0; i <= zero; i++) {
+            long long rs = 0;
+            for (int j = 0; j <= one; j++) {
+                if (j > 0) z[i][j] = cs[j] % MOD;
+                if (i > 0) o[i][j] = rs % MOD;
+                
+                rs = (rs + z[i][j]) % MOD;
+                if (j >= limit) rs = (rs - z[i][j - limit] + MOD) % MOD;
+            }
+            
+            for (int j = 0; j <= one; j++) {
+                cs[j] = (cs[j] + o[i][j]) % MOD;
+                if (i >= limit) cs[j] = (cs[j] - o[i - limit][j] + MOD) % MOD;
+            }
+        }
+        
+        return (z[zero][one] + o[zero][one]) % MOD;
+    }
+};
