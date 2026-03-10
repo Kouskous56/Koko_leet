@@ -1,0 +1,24 @@
+class Solution {
+public:
+    int maxUniqueSplit(string s) {
+        unordered_set<string> used;
+        int ans = 0;
+        dfs(s, 0, used, ans);
+        return ans;
+    }
+    
+    void dfs(const string& s, int start, unordered_set<string>& used, int& ans) {
+        if (start == s.size()) {
+            ans = max(ans, (int)used.size());
+            return;
+        }
+        for (int end = start + 1; end <= s.size(); ++end) {
+            string sub = s.substr(start, end - start);
+            if (used.find(sub) == used.end()) {
+                used.insert(sub);
+                dfs(s, end, used, ans);
+                used.erase(sub);
+            }
+        }
+    }
+};
