@@ -1,0 +1,45 @@
+class Solution {
+public:
+    int numberOfStableArrays(int zero, int one, int limit) {
+        const int MOD = 1e9 + 7;
+        int m = max(zero, one);
+        
+        vector<vector<int>> f(m + 1, vector<int>(m + 1, 0));
+        f[0][0] = 1;
+        
+        for (int k = 1; k <= m; k++) {
+            vector<int> g(m + 1);
+            for (int t = 0; t <= m; t++)
+                g[t] = f[t][k - 1];
+            
+            vector<int> s(m + 1);
+            s[0] = g[0];
+            for (int i = 1; i <= m; i++)
+                s[i] = (s[i - 1] + g[i]) % MOD;
+            
+            for (int t = 1; t <= m; t++) {
+                int l = max(0, t - limit);
+                int r = t - 1;
+                
+                int sum = s[r];
+                if (l - 1 >= 0)
+                    sum = (sum - s[l - 1] + MOD) % MOD;
+                
+                f[t][k] = sum;
+            }
+        }
+        
+        long long ans = 0;
+        
+        for (int k = 1; k <= min(zero, one); k++)
+            ans = (ans + 2LL * f[zero][k] * f[one][k]) % MOD;
+        
+        for (int k = 1; k <= min(zero - 1, one); k++)
+            ans = (ans + 1LL * f[zero][k + 1] * f[one][k]) % MOD;
+        
+        for (int k = 1; k <= min(zero, one - 1); k++)
+            ans = (ans + 1LL * f[zero][k] * f[one][k + 1]) % MOD;
+        
+        return ans % MOD;
+    }
+};
