@@ -1,0 +1,43 @@
+class Solution {
+    struct DSU {
+        vector<int> p;
+        DSU(int n) : p(n, -1) {}
+        int find(int x) { return p[x] < 0 ? x : p[x] = find(p[x]); }
+        bool unite(int a, int b) {
+            a = find(a); b = find(b);
+            if (a == b) return false;
+            p[b] = a;
+            return true;
+        }
+    };
+
+public:
+    int maxStability(int n, vector<vector<int>>& edges, int k) {
+        DSU dsu(n);
+        int used = 0, minF = 2e5, minS = 2e5, minD = 2e5;
+        vector<array<int, 3>> opt;
+        opt.reserve(edges.size());
+        
+        for (auto& e : edges) {
+            if (e[3]) {
+                if (!dsu.unite(e[0], e[1])) return -1;
+                used++;
+                minF = min(minF, e[2]);
+            } else {
+                opt.push_back({e[2], e[0], e[1]});
+            }
+        }
+        
+        sort(opt.begin(), opt.end(), greater());
+        
+        for (auto& [s, u, v] : opt) {
+            if (dsu.unite(u, v)) {
+                used++;
+                if (used == n - k - 1) minS = s;
+                minD = s;
+            }
+        }
+        
+        return used != n - 1 ? -1 : min({minF, minS, (k ? 2 : 1) * minD});
+    }
+};
