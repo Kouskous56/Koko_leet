@@ -1,0 +1,120 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    struct DSU {
+        vector<int> p, sz;
+        
+        DSU(int n) : p(n), sz(n, 1) {
+            iota(p.begin(), p.end(), 0);
+        }
+        
+        int find(int x) {
+            while (p[x] != x) {
+                p[x] = p[p[x]];
+                x = p[x];
+            }
+            return x;
+        }
+        
+        void unite(int a, int b) {
+            a = find(a), b = find(b);
+            if (a == b) return;
+            
+            if (sz[a] < sz[b]) swap(a, b);
+            p[b] = a;
+            sz[a] += sz[b];
+        }
+    };
+    
+    struct Edge {
+        int u, v, s;
+    };
+    
+    int maxStability(int n, vector<vector<int>>& edges, int k) {
+        vector<vector<int>> must, opt;
+        for (auto& e : edges) {
+            if (e[3]) must.push_back(e);
+            else opt.push_back(e);
+        }
+        
+        DSU dsu_must(n);
+        for (auto& e : must) {
+            if (dsu_must.find(e[0]) == dsu_must.find(e[1]))
+                return -1;
+            dsu_must.unite(e[0], e[1]);
+        }
+        
+        vector<int> comp_id(n), root(n, -1);
+        int comp_cnt = 0;
+        for (int i = 0; i < n; i++) {
+            int r = dsu_must.find(i);
+            if (root[r] == -1) root[r] = comp_cnt++;
+            comp_id[i] = root[r];
+        }
+        
+        DSU dsu_all(n);
+        for (auto& e : edges) dsu_all.unite(e[0], e[1]);
+        
+        int root_all = dsu_all.find(0);
+        for (int i = 1; i < n; i++)
+            if (dsu_all.find(i) != root_all) return -1;
+        
+        vector<Edge> inter;
+        int max_s = 0;
+        for (auto& e : opt) {
+            max_s = max(max_s, e[2]);
+            int cu = comp_id[e[0]], cv = comp_id[e[1]];
+            if (cu != cv) inter.push_back({cu, cv, e[2]});
+        }
+        
+        int min_must = INT_MAX;
+        for (auto& e : must) min_must = min(min_must, e[2]);
+        
+        int lo = 1, hi = must.empty() ? 2 * max_s : min_must;
+        
+        while (lo < hi) {
+            int mid = (lo + hi + 1) / 2;
+            if (feasible(mid, inter, comp_cnt, k, min_must))
+                lo = mid;
+            else
+                hi = mid - 1;
+        }
+        
+        return lo;
+    }
+    
+private:
+    bool feasible(int X, vector<Edge>& inter, int comp_cnt, int k, int min_must) {
+        if (min_must < X) return false;
+        
+        DSU overall(comp_cnt), good(comp_cnt);
+        
+        for (auto& e : inter) {
+            if (e.s >= X) {
+                overall.unite(e.u, e.v);
+                good.unite(e.u, e.v);
+            } else if (e.s * 2 >= X) {
+                overall.unite(e.u, e.v);
+            }
+        }
+        
+        int root_overall = overall.find(0);
+        for (int i = 1; i < comp_cnt; i++)
+            if (overall.find(i) != root_overall) return false;
+        
+        vector<bool> seen(comp_cnt, false);
+        int components = 0;
+        
+        for (int i = 0; i < comp_cnt; i++) {
+            int r = good.find(i);
+            if (!seen[r]) {
+                seen[r] = true;
+                components++;
+            }
+        }
+        
+        return components - 1 <= k;
+    }
+};
