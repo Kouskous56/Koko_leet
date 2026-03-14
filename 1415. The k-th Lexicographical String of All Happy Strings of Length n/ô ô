@@ -1,0 +1,29 @@
+class Solution {
+public:
+    string getHappyString(int n, int k) {
+        string res, cur;
+        int cnt = 0;
+        dfs(n, k, cur, cnt, res);
+        return res;
+    }
+
+private:
+    bool dfs(int n, int k, string& cur, int& cnt, string& res) {
+        if (cur.size() == n) {
+            cnt++;
+            if (cnt == k) {
+                res = cur;
+                return true;
+            }
+            return false;
+        }
+
+        for (char c = 'a'; c <= 'c'; ++c) {
+            if (!cur.empty() && c == cur.back()) continue;
+            cur.push_back(c);
+            if (dfs(n, k, cur, cnt, res)) return true;
+            cur.pop_back();
+        }
+        return false;
+    }
+};
